@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <bits/stdc++.h>
+#define i_input _color(14);printf(">");_color();
 
-#define i_input _color(14); cout << '>'; _color();
 using namespace std;
 
 const char* WINDOW_TITLE = "窗口 颜色遮罩";  // 遮罩窗口标题
