@@ -9,15 +9,11 @@
 using namespace std;
 
 // 窗口标题常量
-const char* MAIN_WINDOW_TITLE = "太Low - 屏幕颜色遮罩 v2.1";
+const char* MAIN_WINDOW_TITLE = "太Low - 屏幕颜色遮罩 v2.0";
 // 版权信息常量
 const char* COPYRIGHT_TEXT = "by IQ Online Studio, github.com/iqonli/TooLow";
-// 官网常量
-const string OFFICAL_WEB = "https://github.com/iqonli/TooLow";
 // 定时器ID（自动刷新置顶用）
 const UINT TIMER_AUTO_REFRESH = 10086;
-// 定时器时间（ms）
-int timer_time = 1000;
 
 // 遮罩窗口信息结构体（关联窗口句柄与对应显示器）
 struct MaskWindowInfo
@@ -58,7 +54,7 @@ HWND hStaticHexLabel;                 // Hex标签控件（显示"HEX: #"）
 HWND hEditHex;                        // Hex颜色输入框
 HWND hBtnCloseMask;                   // 关闭此屏遮罩按钮
 HWND hBtnOpenMask;                    // 打开此屏遮罩按钮
-HWND hBtnToggleAllMasks;              // 新增：关闭全部屏幕遮罩/打开遮罩按钮
+HWND hBtnToggleAllMasks;              // 新增：关闭全部遮罩/打开遮罩按钮
 bool isUpdatingHex = false;           // 防Hex输入框循环更新标志
 
 int r = 255, g = 255, b = 255; // RGB颜色（初始白色）
@@ -130,7 +126,7 @@ HWND findCurrentMonitorMaskWnd()
 	return NULL;
 }
 
-// 检查所有遮罩窗口是否均处于显示状态
+// 新增：检查所有遮罩窗口是否均处于显示状态
 bool IsAllMasksVisible()
 {
 	if (hMaskWnds.empty()) return false; // 无窗口时视为未全部显示
@@ -226,10 +222,10 @@ void RecreateMaskWindows()
 	// 3. 应用当前设置
 	UpdateMaskWindow();
 	
-	// 4. 更新"关闭全部屏幕遮罩/打开"按钮文本（默认全开启，显示"关闭全部屏幕遮罩"）
+	// 4. 更新"关闭全部遮罩/打开"按钮文本（默认全开启，显示"关闭全部遮罩"）
 	if (hBtnToggleAllMasks != NULL)
 	{
-		SetWindowText(hBtnToggleAllMasks, IsAllMasksVisible() ? "关闭全部屏幕遮罩" : "打开全部遮罩");
+		SetWindowText(hBtnToggleAllMasks, IsAllMasksVisible() ? "关闭全部遮罩" : "打开全部遮罩");
 	}
 }
 
@@ -325,42 +321,29 @@ BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMoni
 	return TRUE;
 }
 
-// 主窗口消息处理
+// 主窗口消息处理（新增全部控制按钮逻辑）
 LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
 	{
 	case WM_CREATE:
 	{
-		int size_from_Ledge=25;
 		// 注册定时器
-		SetTimer(hwnd, TIMER_AUTO_REFRESH, timer_time, NULL);
+		SetTimer(hwnd, TIMER_AUTO_REFRESH, 1000, NULL);
 		
 		// 版权信息控件
 		hStaticCopyright = CreateWindow(
 										"STATIC", COPYRIGHT_TEXT,
 										WS_CHILD | WS_VISIBLE | SS_LEFT | SS_CENTERIMAGE,
-										size_from_Ledge, 10, 305, 20,
+										50, 360, 300, 20,
 										hwnd, NULL, GetModuleHandle(NULL), NULL
-										);
-//		hStaticCopyright = CreateWindow(
-//									 "BUTTON", COPYRIGHT_TEXT,
-//									 WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-//									 size_from_Ledge, 10, 305, 20,
-//									 hwnd, (HMENU)5010, GetModuleHandle(NULL), NULL
-//									 );
-		hStaticCopyright = CreateWindow(
-										"BUTTON", "Go to our website 打开官网",
-										WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-										size_from_Ledge, 375, 200, 25,
-										hwnd, (HMENU)5010, GetModuleHandle(NULL), NULL
 										);
 		
 		// RGB滑块
 		hSliderR = CreateWindow(
 								TRACKBAR_CLASS, "R",
 								WS_CHILD | WS_VISIBLE | TBS_HORZ | TBS_AUTOTICKS,
-								size_from_Ledge, 40, 220, 30,
+								50, 40, 200, 30,
 								hwnd, (HMENU)1001, GetModuleHandle(NULL), NULL
 								);
 		SendMessage(hSliderR, TBM_SETRANGE, TRUE, MAKELONG(0, 255));
@@ -369,7 +352,7 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		hSliderG = CreateWindow(
 								TRACKBAR_CLASS, "G",
 								WS_CHILD | WS_VISIBLE | TBS_HORZ | TBS_AUTOTICKS,
-								size_from_Ledge, 80, 220, 30,
+								50, 80, 200, 30,
 								hwnd, (HMENU)1002, GetModuleHandle(NULL), NULL
 								);
 		SendMessage(hSliderG, TBM_SETRANGE, TRUE, MAKELONG(0, 255));
@@ -378,7 +361,7 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		hSliderB = CreateWindow(
 								TRACKBAR_CLASS, "B",
 								WS_CHILD | WS_VISIBLE | TBS_HORZ | TBS_AUTOTICKS,
-								size_from_Ledge, 120, 220, 30,
+								50, 120, 200, 30,
 								hwnd, (HMENU)1003, GetModuleHandle(NULL), NULL
 								);
 		SendMessage(hSliderB, TBM_SETRANGE, TRUE, MAKELONG(0, 255));
@@ -388,23 +371,23 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		hSliderA = CreateWindow(
 								TRACKBAR_CLASS, "Alpha",
 								WS_CHILD | WS_VISIBLE | TBS_HORZ | TBS_AUTOTICKS,
-								size_from_Ledge, 160, 220, 30,
+								50, 160, 200, 30,
 								hwnd, (HMENU)1004, GetModuleHandle(NULL), NULL
 								);
 		SendMessage(hSliderA, TBM_SETRANGE, TRUE, MAKELONG(0, 100));
 		SendMessage(hSliderA, TBM_SETPOS, TRUE, alpha);
 		
 		// 数值显示文本
-		hStaticR = CreateWindow("STATIC", "R: 255", WS_CHILD | WS_VISIBLE | SS_LEFT, size_from_Ledge + 230, 40, 52, 20, hwnd, NULL, GetModuleHandle(NULL), NULL);
-		hStaticG = CreateWindow("STATIC", "G: 255", WS_CHILD | WS_VISIBLE | SS_LEFT, size_from_Ledge + 230, 80, 52, 20, hwnd, NULL, GetModuleHandle(NULL), NULL);
-		hStaticB = CreateWindow("STATIC", "B: 255", WS_CHILD | WS_VISIBLE | SS_LEFT, size_from_Ledge + 230, 120, 52, 20, hwnd, NULL, GetModuleHandle(NULL), NULL);
-		hStaticA = CreateWindow("STATIC", "A: 0%",  WS_CHILD | WS_VISIBLE | SS_LEFT, size_from_Ledge + 230, 160, 52, 20, hwnd, NULL, GetModuleHandle(NULL), NULL);
+		hStaticR = CreateWindow("STATIC", "R: 255", WS_CHILD | WS_VISIBLE | SS_LEFT, 260, 40, 80, 20, hwnd, NULL, GetModuleHandle(NULL), NULL);
+		hStaticG = CreateWindow("STATIC", "G: 255", WS_CHILD | WS_VISIBLE | SS_LEFT, 260, 80, 80, 20, hwnd, NULL, GetModuleHandle(NULL), NULL);
+		hStaticB = CreateWindow("STATIC", "B: 255", WS_CHILD | WS_VISIBLE | SS_LEFT, 260, 120, 80, 20, hwnd, NULL, GetModuleHandle(NULL), NULL);
+		hStaticA = CreateWindow("STATIC", "A: 0%",  WS_CHILD | WS_VISIBLE | SS_LEFT, 260, 160, 80, 20, hwnd, NULL, GetModuleHandle(NULL), NULL);
 		
 		// 颜色预览区
 		hwndPreview = CreateWindow(
 								   "STATIC", "",
 								   WS_CHILD | WS_VISIBLE | SS_WHITERECT,
-								   size_from_Ledge + 50, 200, 200, 60,
+								   100, 200, 200, 60,
 								   hwnd, NULL, GetModuleHandle(NULL), NULL
 								   );
 		
@@ -412,14 +395,14 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		hCheckTopmost = CreateWindow(
 									 "BUTTON", "完全置顶",
 									 WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX,
-									 size_from_Ledge + 110, 272, 85, 20,
+									 160, 270, 100, 20,
 									 hwnd, (HMENU)3001, GetModuleHandle(NULL), NULL
 									 );
 		
 		hCheckAutoRefresh = CreateWindow(
 										 "BUTTON", "自动刷新置顶",
 										 WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX,
-										 size_from_Ledge + 200, 272, 110, 20,
+										 270, 270, 120, 20,
 										 hwnd, (HMENU)3003, GetModuleHandle(NULL), NULL
 										 );
 		
@@ -428,11 +411,11 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		CheckDlgButton(hwnd, 3003, BST_UNCHECKED); // 自动刷新默认不勾选
 		EnableWindow(hCheckAutoRefresh, isTopmost);
 		
-		// 关闭全部屏幕遮罩/打开遮罩按钮（替换原仅主屏幕复选框位置，不遮挡其他控件）
+		// 新增：关闭全部遮罩/打开遮罩按钮（替换原仅主屏幕复选框位置，不遮挡其他控件）
 		hBtnToggleAllMasks = CreateWindow(
-										  "BUTTON", "关闭全部屏幕遮罩",  // 初始全开启，显示"关闭全部屏幕遮罩"
+										  "BUTTON", "关闭全部遮罩",  // 初始全开启，显示"关闭全部遮罩"
 										  WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-										  size_from_Ledge + 65, 300, 140, 25,       // 原仅主屏幕复选框位置，与右侧复选框间距合理
+										  50, 270, 100, 20,       // 原仅主屏幕复选框位置，与右侧复选框间距合理
 										  hwnd, (HMENU)5003,      // 新按钮ID
 										  GetModuleHandle(NULL), NULL
 										  );
@@ -441,14 +424,14 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		hStaticHexLabel = CreateWindow(
 									   "STATIC", "HEX: #",
 									   WS_CHILD | WS_VISIBLE | SS_LEFT | SS_CENTERIMAGE,
-									   size_from_Ledge, 270, 45, 25,
+									   50, 300, 50, 25,
 									   hwnd, NULL, GetModuleHandle(NULL), NULL
 									   );
 		
 		hEditHex = CreateWindowA(
 								 "EDIT", "",
 								 WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL | ES_NOHIDESEL,
-								 size_from_Ledge + 48, 273, 50, 18,
+								 110, 300, 80, 25,
 								 hwnd, (HMENU)4001, GetModuleHandle(NULL), NULL
 								 );
 		string initHex = getCurrentHex();
@@ -459,45 +442,25 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		hBtnCloseMask = CreateWindow(
 									 "BUTTON", "关闭此屏遮罩",
 									 WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-									 size_from_Ledge, 330, 120, 25,
+									 50, 330, 120, 25,
 									 hwnd, (HMENU)5001, GetModuleHandle(NULL), NULL
 									 );
 		
 		hBtnOpenMask = CreateWindow(
 									"BUTTON", "打开此屏遮罩",
 									WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-									size_from_Ledge + 150, 330, 120, 25,
+									200, 330, 120, 25,
 									hwnd, (HMENU)5002, GetModuleHandle(NULL), NULL
 									);
 		
 		return 0;
 	}
-		// 394px: 左右分界线
 		
-		// 绘制hwnd颜色预览和Hex输入框灰色边框
+		// 绘制Hex输入框灰色边框
 	case WM_PAINT:
 		{
 			PAINTSTRUCT ps;
 			HDC hdc = BeginPaint(hwnd, &ps);
-			
-			if (hwndPreview != NULL && IsWindowVisible(hwndPreview))
-			{
-				RECT editRect;
-				GetWindowRect(hwndPreview, &editRect);
-				ScreenToClient(hwnd, (LPPOINT)&editRect.left);
-				ScreenToClient(hwnd, (LPPOINT)&editRect.right);
-				
-				RECT borderRect = {
-					editRect.left - 1,
-					editRect.top - 1,
-					editRect.right + 1,
-					editRect.bottom + 1
-				};
-				
-				HBRUSH hBorderBrush = CreateSolidBrush(RGB(127, 127, 127));
-				FillRect(hdc, &borderRect, hBorderBrush);
-				DeleteObject(hBorderBrush);
-			}
 			
 			if (hEditHex != NULL && IsWindowVisible(hEditHex))
 			{
@@ -608,12 +571,8 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 			// 按钮点击事件（先处理全部控制按钮，再处理此屏控制按钮）
 			else if (event == BN_CLICKED)
 			{
-				if (cmd == 5010)
-				{
-					system(("start " + OFFICAL_WEB).c_str());
-				}
-				// 关闭全部屏幕遮罩/打开遮罩按钮
-				else if (cmd == 5003)
+				// 关闭全部遮罩/打开遮罩按钮
+				if (cmd == 5003)
 				{
 					bool allVisible = IsAllMasksVisible();
 					const char* newBtnText = NULL;
@@ -626,7 +585,7 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 							if (info.hWnd != NULL)
 								ShowWindow(info.hWnd, SW_HIDE);
 						}
-						newBtnText = "打开全部屏幕遮罩";
+						newBtnText = "打开全部遮罩";
 					}
 					else
 					{
@@ -643,7 +602,7 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 							}
 						}
 						UpdateMaskWindow(); // 刷新颜色，避免默认白色
-						newBtnText = "关闭全部屏幕遮罩";
+						newBtnText = "关闭全部遮罩";
 					}
 					
 					// 更新按钮文本
@@ -664,7 +623,7 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 						// 同步更新全部控制按钮文本（若所有窗口都隐藏）
 						if (hBtnToggleAllMasks != NULL)
 						{
-							SetWindowText(hBtnToggleAllMasks, IsAllMasksVisible() ? "关闭全部屏幕遮罩" : "打开全部屏幕遮罩");
+							SetWindowText(hBtnToggleAllMasks, IsAllMasksVisible() ? "关闭全部遮罩" : "打开全部遮罩");
 						}
 					}
 					else if (cmd == 5002)     // 打开此屏遮罩
@@ -678,7 +637,7 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 						// 同步更新全部控制按钮文本（若所有窗口都显示）
 						if (hBtnToggleAllMasks != NULL)
 						{
-							SetWindowText(hBtnToggleAllMasks, IsAllMasksVisible() ? "关闭全部屏幕遮罩" : "打开全部屏幕遮罩");
+							SetWindowText(hBtnToggleAllMasks, IsAllMasksVisible() ? "关闭全部遮罩" : "打开全部遮罩");
 						}
 					}
 				}
@@ -767,7 +726,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 							  mainExStyle,
 							  "MainWindowClass", MAIN_WINDOW_TITLE,
 							  WS_OVERLAPPEDWINDOW & ~WS_MAXIMIZEBOX,
-							  CW_USEDEFAULT, CW_USEDEFAULT, 360, 450,
+							  CW_USEDEFAULT, CW_USEDEFAULT, 400, 450,
 							  NULL, NULL, hInstance, NULL
 							  );
 	if (hMainWnd == NULL)
